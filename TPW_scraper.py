@@ -118,8 +118,7 @@ class TPW:
     def retrieve_image_link(self, soup,contents):
         # Obtain all available image src and add to dictionary
         images = soup.find_all('img')
-        for image in images:
-            contents["Images"].append(image['src'])
+        [contents["Images"].append(image['src']) for image in images]
 
     def append_products(self,contents,product,id, product_list, id_list):
         # Add contents to the bigger product dictionary 
