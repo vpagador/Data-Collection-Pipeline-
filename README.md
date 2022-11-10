@@ -109,6 +109,22 @@ if __name__ == '__main__':
 
 ## Milestone 5: Create a Method to scrape text and image data
 
+- The website is not too dynamic to need selenium, hence to scrape the items (name, price, description, images etc) for each product, the requests and BeautifulSoup libraries are used as a straightforward way to locate and scrape html objects given a parsed url page. 
+
+- This method creates lists, one to contain product dictionaries and the other for the product unique id.
+
+- Each page url from the url list are iterated and made into a requests object, to then a Beautiful Soup object for easier locating of html elements.
+
+- The uuid library makes it simple to generate unique ids for each product, which would then be used to identify directories.
+
+- Each product is represented as a dictionary that contains the id, scrape time and a nested dictionary called 'contents' which contain the scraped items which are text and image src data.
+
+- The name of the class or id is used to locate some of the text elements. Using the lxml library, the XPath can also be used to locate elements, in this case the price, which was not straightforwardly accessible by tags due to how it was embedded in the html. 
+
+- Instead of locating each image element individually, all avaialble image src elements are scraped for simplicity. Unneccessary images can be filtered out at a later stage of the pipeline.
+
+- The method returns another method to create new directories and json files for the raw data collected. The product and id lists are returned with it as arguments.
+
 ```python
    def get_data(self):
 
@@ -158,8 +174,10 @@ if __name__ == '__main__':
             images = soup.find_all('img')
             for image in images:
                 contents["Images"].append(image['src'])
+                
             # Add contents to the bigger product dictionary 
             product['contents'] = contents
+            
             # Add each product dictionary to the product list
             # and id of each product to the id list 
             product_list.append(product)
@@ -171,6 +189,14 @@ if __name__ == '__main__':
 ```
 
 ## Milestone 6: Create new directories to store json files of each product
+
+- To create the directories for the raw data collected, the os library is used to access the local filing system and the json library is use to create json objects from the python dictionaires.
+
+- A folder called 'raw_data' is created, within which a directory and a json file corresponding to the product are created.
+
+- To do this, the product and id lists are iterated in parallel using zip; each id becomes the name of a folder conataining the json of the corresponding product.
+
+- Within the same loop, the next method is called to open and download the src links within each product folder and save them in the same location.
 
 ```python
     def create_json(self, product_list, id_list):
@@ -195,6 +221,12 @@ if __name__ == '__main__':
 ```
 
 ## Milestone 7: Extract and download each image src from each product and save to the corresponding directories 
+
+- Using the urllib library, every src link in each product folder is downloaded (if possible) on the web and saved in a local folder called 'images' within the same product folder.
+
+- The datetime library is used to construct the name that represents each image downloaded in sequence; the format is '<date>_<time>_<order of image>.<image file extension>' as shown in the variable `image_file_name_png` which creates the name of the image file.
+
+- Within the loop of the previous method `create_json`, another loop in this method `download_save_images` iterates over the src links and using enurmerate, counts and assigns the order of images saved and downloaded.
 
 ```python
     def download_save_images(self,product, item_path):
