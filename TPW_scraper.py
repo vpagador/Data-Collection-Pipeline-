@@ -63,11 +63,9 @@ class TPW:
             self.page_urls_list.append(page_url)
         print(self.page_urls_list)
 
-    def get_data(self):
-
+    def generate_product_dict(self):
         product_list = []
         id_list = []
-        
         for page_url in self.page_urls_list:
             response = requests.get(page_url)
             sleep(1)
@@ -80,50 +78,57 @@ class TPW:
             contents = {"Product Name": [],"Price": [],"Description Short":[],
                                 "Sizes":[],"Flavours":[],"Description Long" :[], 
                                 "Rating Percentage" : [],"Number of Reviews":[], "Images":[]}
-            sleep(1)
-            # Scrape each category of text data and add to dictionary
-            product_name = soup.find('h1').text
-            contents["Product Name"].append(product_name)
-                    
-            price = dom.xpath('//*[@id="__next"]/div/div[3]/div/section[1]/div/div/div[2]/section/div/div[3]/'
-                                'form/div[3]/div[1]/div/div[2]/div/span/span')[0].text
-            contents["Price"].append(price)
 
-            description_short = soup.find(id='product-description-short').text
-            contents["Description Short"].append(description_short)
-
-            sizes = soup.find(class_='ProductItem_size__3Ux92 size btn-group').text
-            contents["Sizes"].append(sizes)
-
-            flavours = soup.find(class_='form-select').text
-            contents["Flavours"].append(flavours)
-
-            description_long = soup.find(class_='RRT__panel panel').text
-            contents["Description Long"].append(description_long)
-
-            rating_percentage = soup.find(class_='ProductItem_rating__1WQSr').text
-            contents["Rating Percentage"].append(rating_percentage)
-
-            number_of_reviews = soup.find(class_='ProductItem_reviews__2xbGO').text
-            number_of_reviews = re.sub(r'\W+','',number_of_reviews)
-            contents["Number of Reviews"].append(number_of_reviews)
-
-            # Obtain all available image src and add to dictionary
-            images = soup.find_all('img')
-            for image in images:
-                contents["Images"].append(image['src'])
-
-            # Add contents to the bigger product dictionary 
-            product['contents'] = contents
-
-            # Add each product dictionary to the product list
-            # and id of each product to the id list 
-            product_list.append(product)
-            id_list.append(id)
-
+            self.scrape_contents(contents, soup, dom)
+            self.retrieve_image_link(soup, contents)
+            self.append_products(contents,product,id, product_list, id_list)
+        
         # call the create_json method
         return self.create_json(product_list, id_list)
+
+    def scrape_contents(self,contents, soup, dom):
+        sleep(1)
+        # Scrape each category of text data and add to dictionary
+        product_name = soup.find('h1').text    
+        price = dom.xpath('//*[@id="__next"]/div/div[3]/div/section[1]/div/div/div[2]/section/div/div[3]/'
+                                'form/div[3]/div[1]/div/div[2]/div/span/span')[0].text
+        description_short = soup.find(id='product-description-short').text
+        sizes = soup.find(class_='ProductItem_size__3Ux92 size btn-group').text
+        flavours = soup.find(class_='form-select').text
+        description_long = soup.find(class_='RRT__panel panel').text
+        rating_percentage = soup.find(class_='ProductItem_rating__1WQSr').text
+        number_of_reviews = soup.find(class_='ProductItem_reviews__2xbGO').text
+        number_of_reviews = re.sub(r'\W+','',number_of_reviews)
         
+        self.populate_contents_dict(contents, product_name, price, description_short, sizes, 
+                        flavours,description_long, rating_percentage, number_of_reviews)
+
+
+    def populate_contents_dict(self, contents,product_name, price, description_short, sizes, 
+                        flavours,description_long, rating_percentage, number_of_reviews):
+        contents["Product Name"].append(product_name)
+        contents["Price"].append(price)
+        contents["Description Short"].append(description_short)
+        contents["Sizes"].append(sizes)
+        contents["Flavours"].append(flavours)
+        contents["Description Long"].append(description_long)
+        contents["Rating Percentage"].append(rating_percentage)
+        contents["Number of Reviews"].append(number_of_reviews)
+    
+    def retrieve_image_link(self, soup,contents):
+        # Obtain all available image src and add to dictionary
+        images = soup.find_all('img')
+        for image in images:
+            contents["Images"].append(image['src'])
+
+    def append_products(self,contents,product,id, product_list, id_list):
+        # Add contents to the bigger product dictionary 
+        product['contents'] = contents
+        # Add each product dictionary to the product list
+        # and id of each product to the id list 
+        product_list.append(product)
+        id_list.append(id)
+
 
     def create_json(self, product_list, id_list):
         # set project directory, make raw data directory and join them
@@ -155,12 +160,10 @@ class TPW:
         print(images_dir_path)
         for count, image_url in enumerate(product['contents']['Images']):
             image_datetime =  datetime.datetime.now()
-            image_day = image_datetime.strftime('%d')
-            image_month = image_datetime.strftime('%m')
-            image_year = image_datetime.strftime('%Y')
+            image_date = image_datetime.strftime("%d%m%Y")
             image_seconds = image_datetime.strftime('%f')
             image_order = count
-            image_file_name_png = f"{image_day}{image_month}{image_year}_{image_seconds}_{image_order}.png"
+            image_file_name_png = f"{image_date}_{image_seconds}_{image_order}.png"
             try:
                 with urllib.request.urlopen(image_url) as web_file:
                     data = web_file.read()
@@ -178,10 +181,11 @@ def run_scraper():
     scraper.click_next_page()
     scraper.close_driver()
     scraper.get_pages()'''
-    scraper.get_data()
+    scraper.generate_product_dict()
     scraper.close_driver()
 
 
 if __name__ == '__main__':
     print('this is running directly')
     run_scraper()
+
