@@ -19,12 +19,14 @@ class TPW:
 
     def __init__(self, driver):
         self.driver = driver
-        self.page_urls_list = ["https://www.theproteinworks.com/vegan-wondershake","https://www.theproteinworks.com/whey-protein-360-extreme"]
+        self.page_urls_list = ["https://www.theproteinworks.com/vegan-wondershake",
+                                "https://www.theproteinworks.com/whey-protein-360-extreme"]
 
     def load_and_accept_cookies(self):
         sleep(2)
         try:
-            accept_cookies_button = self.driver.find_element(by=By.XPATH, value ='//*[@id="cookieConsent"]/div/div[3]/button')
+            accept_cookies_button = self.driver.find_element(by=By.XPATH, 
+                                    value ='//*[@id="cookieConsent"]/div/div[3]/button')
             accept_cookies_button.click()
             sleep(1)
         except:
@@ -49,7 +51,10 @@ class TPW:
 
     def click_next_page(self):
         sleep(1)
-        next_page = self.driver.find_element(by=By.XPATH, value='//*[@id="__next"]/div/div[3]/div/div[2]/div[2]/div/section[2]/div/div[2]/div[3]/div/ul/li[10]')
+        next_page = self.driver.find_element(by=By.XPATH, 
+                                value='//*[@id="__next"]/div/div[3]/div/div[2]/div[2]')
+        next_page = next_page.find_element(by=By.XPATH, 
+                                value='/div/section[2]/div/div[2]/div[3]/div/ul/li[10]')
         next_page.click()
     
     def get_pages(self):
@@ -71,17 +76,19 @@ class TPW:
             dom = etree.HTML(str(soup))
             id = uuid.uuid4().hex
             # Create dictionary for each product to contain id, time scraped, text data and image data
-            product = {'unique id ':id, 'time' : str(datetime.datetime.now().strftime('%c')), 'contents' : None}
+            product = {'unique id ':id, 'time' : str(datetime.datetime.now().strftime('%c')), 
+                        'contents' : None}
             contents = {"Product Name": [],"Price": [],"Description Short":[],
                                 "Sizes":[],"Flavours":[],"Description Long" :[], 
                                 "Rating Percentage" : [],"Number of Reviews":[], "Images":[]}
-            
             sleep(1)
             # Scrape each category of text data and add to dictionary
             product_name = soup.find('h1').text
             contents["Product Name"].append(product_name)
                     
-            price = dom.xpath('//*[@id="__next"]/div/div[3]/div/section[1]/div/div/div[2]/section/div/div[3]/form/div[3]/div[1]/div/div[2]/div/span/span')[0].text
+            price = dom.xpath('//*[@id="__next"]/div/div[3]/div/section[1]/div/div')
+            price = price.xpath('/div[2]/section/div/div[3]/form/div[3]/div[1]/div')
+            price = price.xpath('/div[2]/div/span/span')[0].text
             contents["Price"].append(price)
 
             description_short = soup.find(id='product-description-short').text
@@ -136,7 +143,8 @@ class TPW:
             os.mkdir(item_path)
             print(item_path)
             with open(item_path + '/data.json', 'w') as f:
-                    json.dump(product, f, indent=4, default=lambda o: '<not serializable>', ensure_ascii=False)
+                    json.dump(product, f, indent=4, 
+                    default=lambda o: '<not serializable>', ensure_ascii=False)
         
             self.download_save_images(product, item_path)
             
