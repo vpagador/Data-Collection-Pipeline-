@@ -54,8 +54,7 @@ class TPW:
         next_page = self.driver.find_element(by=By.XPATH, 
                                 value='//*[@id="__next"]/div/div[3]/div/div[2]/div[2]')
         next_page = next_page.find_element(by=By.XPATH, 
-                                value='/div/section[2]/div/div[2]/div[3]/div/ul/li[10]')
-        next_page.click()
+                                value='div/section[2]/div/div[2]/div[3]/div/ul/li[10]')
     
     def get_pages(self):
         sleep(1)
@@ -86,9 +85,8 @@ class TPW:
             product_name = soup.find('h1').text
             contents["Product Name"].append(product_name)
                     
-            price = dom.xpath('//*[@id="__next"]/div/div[3]/div/section[1]/div/div')
-            price = price.xpath('/div[2]/section/div/div[3]/form/div[3]/div[1]/div')
-            price = price.xpath('/div[2]/div/span/span')[0].text
+            price = dom.xpath('//*[@id="__next"]/div/div[3]/div/section[1]/div/div/div[2]/section/div/div[3]/'
+                                'form/div[3]/div[1]/div/div[2]/div/span/span')[0].text
             contents["Price"].append(price)
 
             description_short = soup.find(id='product-description-short').text
@@ -187,4 +185,3 @@ def run_scraper():
 if __name__ == '__main__':
     print('this is running directly')
     run_scraper()
-
