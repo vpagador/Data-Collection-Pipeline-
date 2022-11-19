@@ -1,4 +1,4 @@
-from TPW_scraper import *
+from TPW_scraper import TPW
 import unittest
 
 
