@@ -37,8 +37,9 @@ class TpwTestCase(unittest.TestCase):
     
     def test_key_values_type(self):
         for k in self.test.product_list[0]['contents']:
-            value = self.test.product_list[0]['contents'][k][0]
-            self.assertIsInstance(value, str)
+            value_list = self.test.product_list[0]['contents'][k]
+            for value in value_list: 
+                self.assertIsInstance(value, str)
 
     def tearDown(self):
         del self.test
