@@ -410,3 +410,87 @@ if __name__ == '__main__':
                 pass
 
 ```
+
+Milestone 9: Create Unit Tests to Run
+
+- The file test_scraper.py is a module with five unit tests for the public methods namely `test_get_pages()`, `test_generate_product_dictionaries()`, `test_scrape_day()`, `test_pound_sign()`, `test_key_values_type()`. 
+- These test different aspects of the outputted scraped data to ensure that the correct information is being scraped for the product, in the expected format and data type.
+
+```python
+from TPW_scraper import *
+import unittest
+
+```
+
+- Upon initialising, an instance of the class `TPW()` is initiated, with the website url of one of the products being the test website and stored in `self.test.product_urls_list`.
+- The dictionary generated in `self.test.generate_product_dictionaries` is the output against which aspects of it are test against expected values.
+
+```python
+class TpwTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.test = TPW()
+        self.test.product_urls_list = ['https://www.theproteinworks.com/upgrade']
+        self.test.generate_product_dictionaries()
+```
+- `test_get_pages()` expects a list of paginated urls available scrape from.
+
+```python
+        
+    def test_get_pages(self):
+        self.test.get_pages()
+        expected_value= ['https://www.theproteinworks.com/products/page/1',
+        'https://www.theproteinworks.com/products/page/2',
+        'https://www.theproteinworks.com/products/page/3',
+        'https://www.theproteinworks.com/products/page/4',
+        'https://www.theproteinworks.com/products/page/5',
+        'https://www.theproteinworks.com/products/page/6',
+        'https://www.theproteinworks.com/products/page/7']
+        actual_value = self.test.page_urls_list
+        self.assertEqual(expected_value, actual_value)
+```
+-`test_generate_product_dict_name()` expects the correct name of the product being scraped. 
+- The page may change in the future, including the name of the product, so it is a good test to ensure that the correct name to date is obtained.
+
+```python
+
+    def test_generate_product_dict_name(self):
+        expected_value = "Upgrade Multi-Protein"
+        actual_value = self.test.product_list[0]['contents']['Product Name'][0]
+        self.assertEqual(expected_value, actual_value)
+```
+- `test_scrape_day()` tests that the `timedate.timedate.now().strftime('%c')` is working correctly by outputting a valid abbreviated day of the week in the first three characters.
+
+```python
+
+    def test_scrape_day(self):
+        days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+        day = self.test.product_list[0]['time'][0:3]
+        self.assertTrue(day in days)
+```
+
+-`test_pound_sign` checks that a pound sign is included in the price scraped.
+
+```python
+    def test_pound_sign(self):
+        price = self.test.product_list[0]['contents']['Price'][0]
+        self.assertRegex('£', price[0])
+        
+```
+`test_key_values_type()` checks that all values in the product dictionary are a string datatype, provided that they can be accessed as list via iteration. Essentially it checks that all values are a list within which a string(s) are found.
+
+```python 
+    def test_key_values_type(self):
+        for k in self.test.product_list[0]['contents']:
+            value_list = self.test.product_list[0]['contents'][k]
+            for value in value_list: 
+                self.assertIsInstance(value, str)
+```
+- `tearDown()` deletes the instance of the class once the tests are completed
+
+```python
+
+    def tearDown(self):
+        del self.test
+        
+```
