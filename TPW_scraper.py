@@ -39,19 +39,19 @@ class TPW:
     
     Methods:
     ----------
-    load_and_accept_cookies()
+    __load_and_accept_cookies()
         Clicks on the agree button on the pop-up window asking to accept cookies
 
-    pop_up()
+    __pop_up()
         Clicks on the exit button on the promo pop-up window
 
-    scroll()
+    __scroll()
         Scrolls to the end of page
 
-    close_driver()
+    __close_driver()
         Closes the webdriver and browser
 
-    click_next_page()
+    __click_next_page()
         Clicks on the next page button 
 
     get_pages()
@@ -61,26 +61,26 @@ class TPW:
         Creates a dictionary for each product that contains data about the product and metadata. 
         Also initiates requests and BeautifulSoup objects for locating elements
 
-    scrape_contents(contents, soup)
+    __scrape_contents(contents, soup)
         Locates and grabs elements where text data is found
 
-    populate_contents_dict(contents,product_name, price, 
+    __populate_contents_dict(contents,product_name, price, 
                         description_short, sizes, flavours,
                         description_long, rating_percentage, 
                         number_of_reviews)
         Populates the contents dictionary with the scraped text data
         
-    retrieve_image_link(soup,contents)
+    __retrieve_image_link(soup,contents)
         Retrieves all src links available on the page
 
-    append_products(contents,product,id)
+    __append_products(contents,product,id)
         Appends contents dictionary to the product dictionary
         Adds the product dictionary and id to the product list and id list
 
-    create_json()
+    create_json(file_path)
         Creates a json file from each product dictionary and saves it locally 
 
-    download_save_images(product, item_path)
+    __download_save_images(product, item_path)
         Downloads src links from each product dictionary and saves images locally
     '''
     def __init__(self):
@@ -92,7 +92,14 @@ class TPW:
         self.product_list = []
         self.id_list = []
 
-    def load_and_accept_cookies(self):
+    def operate_driver(self):
+        self.__load_and_accept_cookies()
+        self.__pop_up()
+        self.__scroll()
+        self.__click_next_page()
+        self.__close_driver()
+
+    def __load_and_accept_cookies(self):
         '''
         Clicks on the agree button on the pop-up window asking to accept cookies, 
         if applicatble. If not, passes on the method
@@ -106,7 +113,7 @@ class TPW:
         except:
             pass
 
-    def pop_up(self):
+    def __pop_up(self):
         '''
         Clicks on the exit button on the promo pop-up window if applicable. 
         If not, passes on the method
@@ -119,7 +126,7 @@ class TPW:
         except:
             pass
 
-    def scroll(self):
+    def __scroll(self):
         '''
         Scrolls to the end of page
         '''
@@ -130,14 +137,14 @@ class TPW:
         sleep(1)
         self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
-    def close_driver(self):
+    def __close_driver(self):
         '''
         Closes the webdriver and browser
         '''
         sleep(1)
         self.driver.close()
 
-    def click_next_page(self):
+    def __click_next_page(self):
         '''
         Locates and clicks on the next page button
         '''
@@ -196,12 +203,12 @@ class TPW:
                                 "Sizes":[],"Flavours":[],"Description Long" :[], 
                                 "Rating Percentage" : [],"Number of Reviews":[], "Images":[]}
 
-            self.scrape_contents(contents, soup)
-            self.retrieve_image_link(soup, contents)
-            self.append_products(contents,product,id)
+            self.__scrape_contents(contents, soup)
+            self.__retrieve_image_link(soup, contents)
+            self.__append_products(contents,product,id)
             
 
-    def scrape_contents(self,contents, soup):
+    def __scrape_contents(self,contents, soup):
         '''
         Locates and grabs elements where text data is found
 
@@ -224,11 +231,11 @@ class TPW:
         number_of_reviews = soup.find(class_='ProductItem_reviews__2xbGO').text
         number_of_reviews = re.sub(r'\W+','',number_of_reviews)
         
-        return self.populate_contents_dict(contents, product_name, price, description_short, sizes, 
+        return self.__populate_contents_dict(contents, product_name, price, description_short, sizes, 
                         flavours,description_long, rating_percentage, number_of_reviews)
 
 
-    def populate_contents_dict(self, contents,product_name, price, description_short, sizes, 
+    def __populate_contents_dict(self, contents,product_name, price, description_short, sizes, 
                         flavours,description_long, rating_percentage, number_of_reviews):
         '''
         Populates the contents dictionary with the scraped text data
@@ -263,7 +270,7 @@ class TPW:
         contents["Rating Percentage"].append(rating_percentage)
         contents["Number of Reviews"].append(number_of_reviews)
     
-    def retrieve_image_link(self, soup,contents):
+    def __retrieve_image_link(self, soup,contents):
         '''
         1. Retrieves all src links available on the page 
         2. Appends to the contents dictionary
@@ -279,7 +286,7 @@ class TPW:
         images = soup.find_all('img')
         [contents["Images"].append(image['src']) for image in images]
 
-    def append_products(self,contents,product,id):
+    def __append_products(self,contents,product,id):
         '''
         1. Appends contents dictionary to the product dictionary
         2. Adds the product dictionary to the product list
@@ -302,17 +309,22 @@ class TPW:
         self.id_list.append(id)
 
 
-    def create_json(self):
+    def create_json(self, file_path):
         '''
         Creates a json file from each product dictionary and saves it locally:
         1. Creates a new directory called 'raw_data' to contain the scraped data for all products
         2. Jointly iterates through the id_list and product_list to create a directory for each product 
         with the id as the name of the directory. 
         3. Each product dictionary is converted into a json file and is saved within its corresponding directory
+
+        Parameters:
+        ----------
+        file_path: str
+            local directory to store the scraped data in
         '''
         # set project directory, make raw data directory and join them
-        parent_dir = "/home/van28/Desktop/AiCore/Scraper_Project"
-        raw_data_dir = "raw_data"
+        parent_dir = file_path
+        raw_data_dir = "raw_data"   
         raw_data_path = os.path.join(parent_dir, raw_data_dir)
         os.mkdir(raw_data_path)
         print(f"Directory {raw_data_dir} created")
@@ -328,10 +340,10 @@ class TPW:
                     json.dump(product, f, indent=4, 
                     default=lambda o: '<not serializable>', ensure_ascii=False)
         
-            self.download_save_images(product, item_path)
+            self.__download_save_images(product, item_path)
             
-    
-    def download_save_images(self,product, item_path):
+                
+    def __download_save_images(self,product, item_path):
         '''
         Downloads src links from each product dictionary, if possible.
         Else it passes on downloading the src link
@@ -373,18 +385,13 @@ def run_scraper():
     Creates an instance of the scraper class TPW and calls its methods in sequence
     '''
     scraper = TPW()
-    scraper.load_and_accept_cookies()
-    scraper.pop_up()
-    scraper.scroll()
-    scraper.click_next_page()
-    scraper.get_pages()
+    scraper.operate_driver()
+    '''scraper.get_pages()
     scraper.generate_product_dictionaries()
-    scraper.create_json()
-    scraper.close_driver()
+    scraper.create_json("/home/van28/Desktop/AiCore/Scraper_Project")'''
 
 
 if __name__ == '__main__':
     print('this is running directly')
     run_scraper()
-
 
