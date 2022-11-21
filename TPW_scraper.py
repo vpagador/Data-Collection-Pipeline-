@@ -11,6 +11,10 @@ import uuid
 import urllib.request
 
 url = 'https://www.theproteinworks.com/products'
+options = Options() 
+options.add_argument("--headless") 
+options.add_argument("window-size=1920,1080") 
+driver = webdriver.Chrome(options=options)
 driver = webdriver.Chrome()
 driver.get(url)
 
