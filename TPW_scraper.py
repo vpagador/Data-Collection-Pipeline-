@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 from time import sleep
 import datetime
 import json
@@ -15,7 +16,6 @@ options = Options()
 options.add_argument("--headless") 
 options.add_argument("window-size=1920,1080") 
 driver = webdriver.Chrome(options=options)
-driver = webdriver.Chrome()
 driver.get(url)
 
 class TPW:
@@ -33,9 +33,9 @@ class TPW:
         A list of available page urls obtained from the main website
 
     product_urls_list: list
-            A list of obtained urls for each product
+        A list of obtained product urls
     
-    product_list: list
+    product_dict_list: list
         A list of product dictionaries
     
     id_list: list
@@ -45,6 +45,9 @@ class TPW:
     ----------
     __load_and_accept_cookies()
         Clicks on the agree button on the pop-up window asking to accept cookies
+
+    operate_driver()
+        Interacts with the website with a sequence of driver methods 
 
     __pop_up()
         Clicks on the exit button on the promo pop-up window
@@ -58,8 +61,11 @@ class TPW:
     __click_next_page()
         Clicks on the next page button 
 
-    get_pages()
+    get_page_links()
         Grabs all the available page urls
+    
+    get_product_links()
+        Grabs all the available product links on the page
 
     generate_product_dictionaries()
         Creates a dictionary for each product that contains data about the product and metadata. 
@@ -89,11 +95,10 @@ class TPW:
     '''
     def __init__(self):
         self.driver = driver
-        # empty self.product_urls_list when scraping whole website
-        self.product_urls_list = ['https://www.theproteinworks.com/whey-protein-360-extreme',
-        'https://www.theproteinworks.com/upgrade']
         self.page_urls_list = []
-        self.product_list = []
+        # empty self.product_urls_list when scraping whole website
+        self.product_urls_list = []
+        self.product_dict_list = []
         self.id_list = []
 
     def operate_driver(self):
@@ -159,15 +164,46 @@ class TPW:
         next_page.click()
         
     
-    def get_pages(self):
+    def get_page_links(self, number_of_pages):
         '''
         Grabs all the available page urls
+
+        Parameters:
+        ----------
+        page_urls_list: list
+        A list of available page urls obtained from the main website
         '''
         sleep(1)
-        for i in range(1,8):
-            page_url = url + f'/page/{i}' 
-            self.page_urls_list.append(page_url)
-        print(self.page_urls_list)
+        if number_of_pages + 1 > 8:
+            print('Specify a number less than 8')
+        else:
+            for i in range(1,number_of_pages + 1):
+                page_url = url + f'/page/{i}' 
+                self.page_urls_list.append(page_url)
+                print(self.page_urls_list)
+
+
+    def get_product_links(self):
+        '''
+        Grabs all the available product links on the page
+
+        Parameters:
+        ----------
+        product_urls_list: list
+            A list of obtained product urls
+        '''
+        sleep(1)
+        for page in self.page_urls_list:
+            response = requests.get(page)
+            sleep(1)
+            soup = BeautifulSoup(response.content, "html.parser")
+            product_grid = soup.select('ul.list-unstyled.row.product-list.product-items')[0]
+            product_grid = product_grid.select('li.grid-item')
+            for product in product_grid:
+                product = product.select('a.ProductItem_product_name__2JI6M.product-item-'
+                                        'link.product-name.no-hover-effect', href=True)[0]
+                self.product_urls_list.append(product['href'])
+
 
     def generate_product_dictionaries(self):
         '''
@@ -178,7 +214,7 @@ class TPW:
         Parameters:
         ----------
         product_urls_list: list
-            A list of obtained urls for each product
+            A list of obtained product urls 
         response: requests object
             Parses an url to get the HTML of the website
         soup: BeautifulSoup object
@@ -189,11 +225,6 @@ class TPW:
             A dictionary containing the text and src data of the product
         product: dict
             A product dictionary containing the metadata and the contents dictionary
-
-        Returns:
-        ----------
-        self.create_json(self.product_list, self.id_list): method
-            calls the method to create a json file from the product dictionary
         '''
         for product_url in self.product_urls_list:
             response = requests.get(product_url)
@@ -309,7 +340,7 @@ class TPW:
         product['contents'] = contents
         # Add each product dictionary to the product list
         # and id of each product to the id list 
-        self.product_list.append(product)
+        self.product_dict_list.append(product)
         self.id_list.append(id)
 
 
@@ -335,7 +366,7 @@ class TPW:
         
         # loop through ids and results in lists of scraped data and ids.
         # create folders of each id name and dump json file of each product
-        for id, product in zip(self.id_list, self.product_list):
+        for id, product in zip(self.id_list, self.product_dict_list):
             item_dir = id
             item_path = os.path.join(raw_data_path, item_dir)
             os.mkdir(item_path)
@@ -390,7 +421,7 @@ def run_scraper():
     '''
     scraper = TPW()
     scraper.operate_driver()
-    '''scraper.get_pages()
+    '''scraper.get_page_links()
     scraper.generate_product_dictionaries()
     scraper.create_json("/home/van28/Desktop/AiCore/Scraper_Project")'''
 
@@ -398,4 +429,3 @@ def run_scraper():
 if __name__ == '__main__':
     print('this is running directly')
     run_scraper()
-
