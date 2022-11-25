@@ -28,7 +28,7 @@ driver.get(url)
 
 - A class called TPW (The Protein Works) is created with attributes driver, product_urls_list, page_urls_list, product_list and id_list.
 - `self.page_urls_list` and `self.product_urls_list` are for iterating thorugh obtained urls to scrape data from.
-- `self.product_list` and `self.id_list` are for containing product dictionaries and product unique ids respectively.
+- `self.product_dict_list` and `self.id_list` are for containing product dictionaries and product unique ids respectively.
 
 ```python
 class TPW:
