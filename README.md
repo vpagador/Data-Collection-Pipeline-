@@ -17,7 +17,10 @@ from selenium.webdriver.common.by import By
 from time import sleep
 
 url = 'https://www.theproteinworks.com/products'
-driver = webdriver.Chrome()
+options = Options() 
+options.add_argument("--headless") 
+options.add_argument("window-size=1920,1080") 
+driver = webdriver.Chrome(options=options)
 driver.get(url)
 ```
 
@@ -32,11 +35,10 @@ class TPW:
 
     def __init__(self):
         self.driver = driver
-        # empty self.product_urls_list when scraping whole website
-        self.product_urls_list = ['https://www.theproteinworks.com/whey-protein-360-extreme',
-        'https://www.theproteinworks.com/upgrade']
         self.page_urls_list = []
-        self.product_list = []
+        # empty self.product_urls_list when scraping whole website
+        self.product_urls_list = []
+        self.product_dict_list = []
         self.id_list = []
 ```
 
@@ -126,6 +128,18 @@ class TPW:
             self.page_urls_list.append(page_url)
         print(self.page_urls_list)
 ```
+
+- The method `operate_driver()` runs the interactive methods in a sequence for demonstration.
+
+```python
+def operate_driver(self):
+        self.__load_and_accept_cookies()
+        self.__pop_up()
+        self.__scroll()
+        self.__click_next_page()
+        self.__close_driver()
+```
+
 ## Milestone 5: Call Class Methods and run Script under if __main__ == '__name__'
 
 - The function run_scraper() runs all the methods within the TPW class to test them in sequence. 
@@ -138,14 +152,11 @@ def run_scraper():
     Creates an instance of the scraper class TPW and calls its methods in sequence
     '''
     scraper = TPW()
-    scraper.load_and_accept_cookies()
-    scraper.pop_up()
-    scraper.scroll()
-    scraper.click_next_page()
-    scraper.get_pages()
+    scraper.operate_driver()
+    scraper.get_page_links(1)
+    scraper.get_product_links()
     scraper.generate_product_dictionaries()
-    scraper.create_json()
-    scraper.close_driver()
+    scraper.create_json("/home/van28/Desktop/AiCore/Scraper_Project")
 
 
 if __name__ == '__main__':
@@ -327,7 +338,7 @@ if __name__ == '__main__':
         product['contents'] = contents
         # Add each product dictionary to the product list
         # and id of each product to the id list 
-        self.product_list.append(product)
+        self.product_dict_list.append(product)
         self.id_list.append(id)
         '''
 ```
@@ -336,6 +347,8 @@ if __name__ == '__main__':
 
 - To create the directories for the raw data collected, the os library is used to access the local filing system and the json library is use to create json objects from the python dictionaires.
 
+- A file path is taken as argument to specify in string format the local path which the user wants to save the data to.
+
 - A folder called 'raw_data' is created, within which a directory and a json file corresponding to the product are created.
 
 - To do this, the product and id lists are iterated in parallel using zip; each id becomes the name of a folder conataining the json of the corresponding product.
@@ -343,25 +356,38 @@ if __name__ == '__main__':
 - Within the same loop, the next method is called to open and download the src links within each product folder and save them in the same location.
 
 ```python
-    def create_json(self, product_list, id_list):
+    def create_json(self, file_path):
+        '''
+        Creates a json file from each product dictionary and saves it locally:
+        1. Creates a new directory called 'raw_data' to contain the scraped data for all products
+        2. Jointly iterates through the id_list and product_list to create a directory for each product 
+        with the id as the name of the directory. 
+        3. Each product dictionary is converted into a json file and is saved within its corresponding directory
+
+        Parameters:
+        ----------
+        file_path: str
+            local directory to store the scraped data in
+        '''
         # set project directory, make raw data directory and join them
-        parent_dir = "/home/van28/Desktop/AiCore/Scraper_Project"
-        raw_data_dir = "raw_data"
+        parent_dir = file_path
+        raw_data_dir = "raw_data"   
         raw_data_path = os.path.join(parent_dir, raw_data_dir)
         os.mkdir(raw_data_path)
         print(f"Directory {raw_data_dir} created")
         
         # loop through ids and results in lists of scraped data and ids.
         # create folders of each id name and dump json file of each product
-        for id, product in zip(id_list, product_list):
+        for id, product in zip(self.id_list, self.product_dict_list):
             item_dir = id
             item_path = os.path.join(raw_data_path, item_dir)
             os.mkdir(item_path)
             print(item_path)
             with open(item_path + '/data.json', 'w') as f:
-                    json.dump(product, f, indent=4, default=lambda o: '<not serializable>', ensure_ascii=False)
+                    json.dump(product, f, indent=4, 
+                    default=lambda o: '<not serializable>', ensure_ascii=False)
         
-            self.download_save_images(product, item_path)
+            self.__download_save_images(product, item_path)
 ```
 
 ## Milestone 8: Extract and download each image src from each product and save to the corresponding directories 
