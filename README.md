@@ -225,6 +225,7 @@ if __name__ == '__main__':
 
 - `scrape_contents(self,contents, soup)` locates the neccessary HTML elements, stores them in corresponding variables then returns them in a method call along with the contents dictionary. 
 - The name of the class or id is used to locate some of the text elements using BeautifulSoup. 
+- For `price`, a try and except clause is used to avoid the scraper being distrupted with an exception error, as a few product pages may find its price <span> tag embedded differently to most other product pages. 
           
 ```python
     def scrape_contents(self,contents, soup):
@@ -241,6 +242,11 @@ if __name__ == '__main__':
         sleep(1)
         # Scrape each category of text data and add to dictionary
         product_name = soup.find('h1').text  
+        try:
+            price = soup.select('span.ProductItem_price_normal__wYpSr.price_normal.price_special')[0].text
+        except:
+            price = ""
+        description_short = soup.find(id='product-description-short').text  
         price = soup.select('span.ProductItem_price_normal__wYpSr.price_normal.price_special')[0].text
         description_short = soup.find(id='product-description-short').text
         sizes = soup.find(class_='ProductItem_size__3Ux92 size btn-group')
@@ -347,7 +353,9 @@ if __name__ == '__main__':
 
 - To create the directories for the raw data collected, the os library is used to access the local filing system and the json library is use to create json objects from the python dictionaires.
 
-- A file path is taken as argument to specify in string format the local path which the user wants to save the data to.
+- An optional file path is taken as argument to specify in string format the local path which the user wants to save the data to.
+    
+- If a file path is not specified, the user's current directory is taken as argument. 
 
 - A folder called 'raw_data' is created, within which a directory and a json file corresponding to the product are created.
 
@@ -356,7 +364,7 @@ if __name__ == '__main__':
 - Within the same loop, the next method is called to open and download the src links within each product folder and save them in the same location.
 
 ```python
-    def create_json(self, file_path):
+    def create_json(self, file_path=None):
         '''
         Creates a json file from each product dictionary and saves it locally:
         1. Creates a new directory called 'raw_data' to contain the scraped data for all products
@@ -370,7 +378,10 @@ if __name__ == '__main__':
             local directory to store the scraped data in
         '''
         # set project directory, make raw data directory and join them
-        parent_dir = file_path
+        if file_path == None:
+            parent_dir = pathlib.Path(__file__).parent.resolve()
+        else:
+            parent_dir = file_path
         raw_data_dir = "raw_data"   
         raw_data_path = os.path.join(parent_dir, raw_data_dir)
         os.mkdir(raw_data_path)
