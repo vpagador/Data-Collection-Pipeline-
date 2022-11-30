@@ -6,6 +6,7 @@ from time import sleep
 import datetime
 import json
 import os
+import pathlib
 import requests
 import re
 import uuid
@@ -15,6 +16,9 @@ url = 'https://www.theproteinworks.com/products'
 options = Options() 
 options.add_argument("--headless") 
 options.add_argument("window-size=1920,1080") 
+options.add_argument("--no-sandbox"),
+options.add_argument("--disable-gpu")
+options.add_argument("--disable-dev-shm-usage")
 driver = webdriver.Chrome(options=options)
 driver.get(url)
 
@@ -96,7 +100,6 @@ class TPW:
     def __init__(self):
         self.driver = driver
         self.page_urls_list = []
-        # empty self.product_urls_list when scraping whole website
         self.product_urls_list = []
         self.product_dict_list = []
         self.id_list = []
@@ -257,7 +260,10 @@ class TPW:
         sleep(1)
         # Scrape each category of text data and add to dictionary
         product_name = soup.find('h1').text  
-        price = soup.select('span.ProductItem_price_normal__wYpSr.price_normal.price_special')[0].text
+        try:
+            price = soup.select('span.ProductItem_price_normal__wYpSr.price_normal.price_special')[0].text
+        except:
+            price = ""
         description_short = soup.find(id='product-description-short').text
         sizes = soup.find(class_='ProductItem_size__3Ux92 size btn-group')
         flavours = soup.find(class_='form-select')
@@ -344,7 +350,7 @@ class TPW:
         self.id_list.append(id)
 
 
-    def create_json(self, file_path):
+    def create_json(self, file_path=None):
         '''
         Creates a json file from each product dictionary and saves it locally:
         1. Creates a new directory called 'raw_data' to contain the scraped data for all products
@@ -358,7 +364,10 @@ class TPW:
             local directory to store the scraped data in
         '''
         # set project directory, make raw data directory and join them
-        parent_dir = file_path
+        if file_path == None:
+            parent_dir = pathlib.Path(__file__).parent.resolve()
+        else:
+            parent_dir = file_path
         raw_data_dir = "raw_data"   
         raw_data_path = os.path.join(parent_dir, raw_data_dir)
         os.mkdir(raw_data_path)
@@ -421,11 +430,12 @@ def run_scraper():
     '''
     scraper = TPW()
     scraper.operate_driver()
-    '''scraper.get_page_links()
-    scraper.generate_product_dictionaries()
-    scraper.create_json("/home/van28/Desktop/AiCore/Scraper_Project")'''
-
+    scraper.get_page_links(1)
+    scraper.get_product_links()
+    scraper.generate_product_dictionaries("/home/van28/Desktop/AiCore/Scraper_Project")
+    scraper.create_json()
 
 if __name__ == '__main__':
     print('this is running directly')
     run_scraper()
+
