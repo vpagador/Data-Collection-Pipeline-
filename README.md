@@ -357,36 +357,36 @@ if __name__ == '__main__':
     
 - If a file path is not specified, the user's current directory is taken as argument. 
 
-- A folder called 'raw_data' is created, within which a directory and a json file corresponding to the product are created.
+- A folder called 'raw_data' is created if it doesn't yet exist where the json files corresponding to the product are created.
+    - This allows flexibility when the code is containerized, (i.e. using Docker) and a folder of the same name is already created.  
 
-- To do this, the product and id lists are iterated in parallel using zip; each id becomes the name of a folder conataining the json of the corresponding product.
+- The product and id lists are iterated in parallel using zip; each id becomes the name of a folder conataining the json of the corresponding product.
 
 - Within the same loop, the next method is called to open and download the src links within each product folder and save them in the same location.
 
 ```python
     def create_json(self, file_path=None):
         '''
-        Creates a json file from each product dictionary and saves it locally:
-        1. Creates a new directory called 'raw_data' to contain the scraped data for all products
-        2. Jointly iterates through the id_list and product_list to create a directory for each product 
+        1. Creates a new folder raw_data if it doesn't yet exist
+        2. Has an option to pass a local directory to which raw_data is saved in
+        3. Jointly iterates through the id_list and product_list to create a directory for each product 
         with the id as the name of the directory. 
-        3. Each product dictionary is converted into a json file and is saved within its corresponding directory
-
+        4. Each product dictionary is converted into a json file and is saved within its corresponding directory
+        
         Parameters:
         ----------
         file_path: str
             local directory to store the scraped data in
         '''
-        # set project directory, make raw data directory and join them
+        # set project directory, make raw data directory if non-existent yet
+        raw_data_path = "raw_data"
         if file_path == None:
-            parent_dir = pathlib.Path(__file__).parent.resolve()
+            pass
         else:
-            parent_dir = file_path
-        raw_data_dir = "raw_data"   
-        raw_data_path = os.path.join(parent_dir, raw_data_dir)
-        os.mkdir(raw_data_path)
-        print(f"Directory {raw_data_dir} created")
-        
+            raw_data_path = os.path.join(file_path, "raw_data")
+            os.mkdir(raw_data_path)
+            print("Directory 'raw_data' created")
+            
         # loop through ids and results in lists of scraped data and ids.
         # create folders of each id name and dump json file of each product
         for id, product in zip(self.id_list, self.product_dict_list):
