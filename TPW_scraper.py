@@ -428,7 +428,7 @@ def run_scraper():
     scraper.operate_driver()
     scraper.get_page_links(1)
     scraper.get_product_links()
-    scraper.generate_product_dictionaries("/home/van28/Desktop/AiCore/Scraper_Project")
+    scraper.generate_product_dictionaries()
     scraper.create_json()
 
 
