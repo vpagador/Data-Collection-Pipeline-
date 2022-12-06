@@ -372,7 +372,6 @@ class TPW:
         
         # loop through ids and results in lists of scraped data and ids.
         # create folders of each id name and dump json file of each product
-        
         for id, product in zip(self.id_list, self.product_dict_list):
             item_dir = id
             item_path = os.path.join(raw_data_path, item_dir)
@@ -383,7 +382,6 @@ class TPW:
                     default=lambda o: '<not serializable>', ensure_ascii=False)
         
             self.__download_save_images(product, item_path)
-            
                 
     def __download_save_images(self,product, item_path):
         '''
