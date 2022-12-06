@@ -6,7 +6,6 @@ from time import sleep
 import datetime
 import json
 import os
-import pathlib
 import requests
 import re
 import uuid
@@ -91,8 +90,8 @@ class TPW:
         Appends contents dictionary to the product dictionary
         Adds the product dictionary and id to the product list and id list
 
-    create_json(file_path)
-        Creates a json file from each product dictionary and saves it locally 
+    create_json(raw_data_path)
+        Creates a json file from each product dictionary and saves in the folder raw_data 
 
     __download_save_images(product, item_path)
         Downloads src links from each product dictionary and saves images locally
@@ -349,32 +348,31 @@ class TPW:
         self.product_dict_list.append(product)
         self.id_list.append(id)
 
-
-    def create_json(self, file_path=None):
+    def create_json(self, file_path=None):    
         '''
-        Creates a json file from each product dictionary and saves it locally:
-        1. Creates a new directory called 'raw_data' to contain the scraped data for all products
-        2. Jointly iterates through the id_list and product_list to create a directory for each product 
+        1. Creates a new folder raw_data if it doesn't yet exist
+        2. Has an option to pass a local directory to which raw_data is saved in
+        3. Jointly iterates through the id_list and product_list to create a directory for each product 
         with the id as the name of the directory. 
-        3. Each product dictionary is converted into a json file and is saved within its corresponding directory
-
+        4. Each product dictionary is converted into a json file and is saved within its corresponding directory
+        
         Parameters:
         ----------
         file_path: str
             local directory to store the scraped data in
         '''
-        # set project directory, make raw data directory and join them
+        # set project directory, make raw data directory if non-existent yet
+        raw_data_path = "raw_data"
         if file_path == None:
-            parent_dir = pathlib.Path(__file__).parent.resolve()
+            pass
         else:
-            parent_dir = file_path
-        raw_data_dir = "raw_data"   
-        raw_data_path = os.path.join(parent_dir, raw_data_dir)
-        os.mkdir(raw_data_path)
-        print(f"Directory {raw_data_dir} created")
+            raw_data_path = os.path.join(file_path, "raw_data")
+            os.mkdir(raw_data_path)
+            print("Directory 'raw_data' created")
         
         # loop through ids and results in lists of scraped data and ids.
         # create folders of each id name and dump json file of each product
+        
         for id, product in zip(self.id_list, self.product_dict_list):
             item_dir = id
             item_path = os.path.join(raw_data_path, item_dir)
@@ -434,6 +432,7 @@ def run_scraper():
     scraper.get_product_links()
     scraper.generate_product_dictionaries("/home/van28/Desktop/AiCore/Scraper_Project")
     scraper.create_json()
+
 
 if __name__ == '__main__':
     print('this is running directly')
