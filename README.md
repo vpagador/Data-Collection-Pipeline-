@@ -448,7 +448,7 @@ if __name__ == '__main__':
 
 ```
 
-Milestone 9: Create Unit Tests to Run
+## Milestone 9: Create Unit Tests to Run
 
 - The file test_scraper.py is a module with five unit tests for the public methods namely `test_get_pages()`, `test_generate_product_dictionaries()`, `test_scrape_day()`, `test_pound_sign()`, `test_key_values_type()`. 
 - These test different aspects of the outputted scraped data to ensure that the correct information is being scraped for the product, in the expected format and data type.
@@ -531,3 +531,22 @@ class TpwTestCase(unittest.TestCase):
         del self.test
         
 ```
+## Milestone 10: Build Docker image, run container and push image to Docker Hub
+    
+Building the Image:    
+    
+- A Dockerfile is created with the sequence of steps to build the docker image.
+- The docker image is built using `docker build -t <image_name>:<version> [DOCKERPATH]`
+- The docker image is tagged using `docker tag [IMAGE_ID] [IMAGE_NAME]`
+   where [IMAGE_NAME] is `<username>/<image_name>:<version>`
+- After logging in to Docker Hub with the Docker ID, the docker image is pushed using `docker push [IMAGE_NAME]`
+    
+Running the Container with a Docker Volume:
+    
+- The image has been built, so it can run a container with it.
+- To run the container: `docker run -v [LOCAL_PATH]:[DOCKER_PATH] <image_name>`
+    - Where `-v` specifies to run the container with a Docker Volume so the contents scraped can be saved on the local machine.
+    - Since the data scraped is saved in a folder called `raw_data`, that would be the name of the [DOCKERPATH] .i.e, `/raw_data`
+    - <image_name> not to be confused with [IMAGE_NAME] created to tag the image when pushing to Docker Hub
+    
+    
