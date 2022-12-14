@@ -549,5 +549,12 @@ Running the Container with a Docker Volume:
     - Since the data scraped is saved in a folder called `raw_data`, that would be the name of the `[DOCKERPATH]` .i.e, `/raw_data`
     - `<image_name>` not to be confused with `[IMAGE_NAME]` created to tag the image when pushing to Docker Hub
     
-## Milestone 11: Set up CI/CD pipline using Github Actions
+## Milestone 11: Set up CI/CD pipeline using Github Actions
+
+- CI/CD stands for Continuous Integration/ Continuous Deployment.
+- Using a CI/CD pipeline like Github Actions allows the automation of processes to be executed everytime a pull or push action is done on the Github repo.
+    - A yaml script is created to specify the actions to be performed automatically.
+    - In this case, the yaml script will push an image to Docker Hub when a repo pull or push is performed. This will mean an image with the implemented        changes to the repo or code i.e., `TPW_scraper.py` will be push automatically.  
+- The documentation below is followed to build a CI/CD pipeline using Github actions:
+    https://docs.docker.com/build/ci/github-actions/
     
