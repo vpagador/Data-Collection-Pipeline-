@@ -546,7 +546,8 @@ Running the Container with a Docker Volume:
 - The image has been built, so it can run a container with it.
 - To run the container: `docker run -v [LOCAL_PATH]:[DOCKER_PATH] <image_name>`
     - Where `-v` specifies to run the container with a Docker Volume so the contents scraped can be saved on the local machine.
-    - Since the data scraped is saved in a folder called `raw_data`, that would be the name of the [DOCKERPATH] .i.e, `/raw_data`
-    - <image_name> not to be confused with [IMAGE_NAME] created to tag the image when pushing to Docker Hub
+    - Since the data scraped is saved in a folder called `raw_data`, that would be the name of the `[DOCKERPATH]` .i.e, `/raw_data`
+    - `<image_name>` not to be confused with `[IMAGE_NAME]` created to tag the image when pushing to Docker Hub
     
+## Milestone 11: Set up CI/CD pipline using Github Actions
     
