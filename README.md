@@ -1,7 +1,7 @@
 # Data-Collection-Pipeline
 
 An industry-grade data pipeline that is scalable on the cloud.
-- The website: https://www.theproteinworks.com/products is scraped to obtain information on every product and store them in json. This website is used, as helpful information could be scraped such as the product range, type of product, descriptions,flavours, prices, reviews and images. 
+- The website: https://www.theproteinworks.com/products is scraped to obtain information on every product and store them in json. This website is used to scrape valuable information such as the product range, type of product, descriptions,flavours, prices, reviews and images. 
 - Technologies used: Python, OOP, Selenium (Scraping Library), Docker (Containerisation)
 
 ## Milestone 1: Load libraries, set URL and driver variables.
