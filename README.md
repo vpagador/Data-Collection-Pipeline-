@@ -87,9 +87,9 @@ class TPW:
 
 ## Milestone 4: Create methods to interact with website
 
-- More methods are added for website interaction, namely to scroll, close driver (or website), click on the next page of product contents and get all the page urls covering all the product listings.
+- More methods are added for website interaction, namely to scroll, close driver (or website), click on the next page of product contents and get all the page urls showoing all the product listings and the product urls thereafter for all the individual product pages.
 
-- All but the latter method requires the use of the driver to execute.
+- The methods below requires the use of the driver to execute.
 
 ```python
         def scroll(self):
@@ -119,17 +119,6 @@ class TPW:
                                 value='//*[@id="__next"]/div/div[3]/div/div[2]/div[2]/div/'
                                 'section[2]/div/div[2]/div[3]/div/ul/li[10]')
         next_page.click()
-        
-    
-    def get_pages(self):
-        '''
-        Grabs all the available page urls
-        '''
-        sleep(1)
-        for i in range(1,8):
-            page_url = url + f'/page/{i}' 
-            self.page_urls_list.append(page_url)
-        print(self.page_urls_list)
 ```
 
 - The method `operate_driver()` runs the interactive methods in a sequence for demonstration.
@@ -142,6 +131,54 @@ def operate_driver(self):
         self.__click_next_page()
         self.__close_driver()
 ```
+
+
+- `get_page_links` accepts as argument the number of pages the user wants to specify to scrape from and stores their urls in the list `self.page_urls_list`. 
+- `get_product_links` iterates `self.page_urls_list` and gets each individual product's url to store in the list `self.product_urls_list`
+```python
+        
+    def get_page_links(self, number_of_pages):
+        '''
+        Grabs all the available page urls
+
+        Parameters:
+        ----------
+        page_urls_list: list
+        A list of available page urls obtained from the main website
+        '''
+        sleep(1)
+        if number_of_pages + 1 > 8:
+            print('Specify a number less than 8')
+        else:
+            for i in range(1,number_of_pages + 1):
+                page_url = url + f'/page/{i}' 
+                self.page_urls_list.append(page_url)
+                print(self.page_urls_list)
+
+
+    def get_product_links(self):
+        '''
+        Grabs all the available product links on the page
+
+        Parameters:
+        ----------
+        product_urls_list: list
+            A list of obtained product urls
+        '''
+        sleep(1)
+        for page in self.page_urls_list:
+            response = requests.get(page)
+            sleep(1)
+            soup = BeautifulSoup(response.content, "html.parser")
+            product_grid = soup.select('ul.list-unstyled.row.product-list.product-items')[0]
+            product_grid = product_grid.select('li.grid-item')
+            for product in product_grid:
+                product = product.select('a.ProductItem_product_name__2JI6M.product-item-'
+                                        'link.product-name.no-hover-effect', href=True)[0]
+                self.product_urls_list.append(product['href'])
+
+```
+
 
 ## Milestone 5: Call Class Methods and run Script under if __main__ == '__name__'
 
@@ -455,6 +492,7 @@ if __name__ == '__main__':
 
 - The file test_scraper.py is a module with five unit tests for the public methods namely `test_get_pages()`, `test_generate_product_dictionaries()`, `test_scrape_day()`, `test_pound_sign()`, `test_key_values_type()`. 
 - These test different aspects of the outputted scraped data to ensure that the correct information is being scraped for the product, in the expected format and data type.
+- To run these tests in the terminal: `python -m unnitest` will detect any script that starts with `test_` and run all the unit tests.
 
 ```python
 from TPW_scraper import *
