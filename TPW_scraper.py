@@ -430,8 +430,8 @@ def run_scraper():
     scraper.operate_driver()
     scraper.get_page_links(1)
     scraper.get_product_links()
-    scraper.generate_product_dictionaries("/home/van28/Desktop/AiCore/Scraper_Project")
-    scraper.create_json()
+    scraper.generate_product_dictionaries()
+    scraper.create_json("/home/van28/Desktop/AiCore/Scraper_Project")
 
 
 if __name__ == '__main__':
